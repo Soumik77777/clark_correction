@@ -143,7 +143,7 @@ def clark_model(image_array,
                     fitted_temp[i, j] = popt[0]
                     temp_error[i, j] = np.sqrt(pcov[0, 0])
 
-                    fitted_emissivity[1, j] = emissivity
+                    fitted_emissivity[i, j] = emissivity
                     emissivity_error[i, j] = emissivity_sem
                 except:
                     continue
@@ -168,7 +168,7 @@ def process_key(key, survey_dict, save_directory):
     iof_image = np.load(survey_dict[key]['iof_data'])
     d_au = fetch_d_from_lbl(survey_dict[key]['lbl_file'])
 
-    fitted_temp, fitted_emissivity, temp_error, emissivity_error = clark_model(iof_image, d=d_au, fitting_wav_range=[3, 4.1])
+    fitted_temp, fitted_emissivity, temp_error, emissivity_error = clark_model(iof_image, d=d_au, fitting_wav_range=[3.6, 4.2])
 
     data_to_save = {
         'fitted_temp': fitted_temp,
@@ -185,7 +185,6 @@ tasks = [process_key.remote(key, survey_dict, save_directory) for key in survey_
 
 ray.get(tasks)
 
-# Shutdown Ray
 ray.shutdown()
 
 
