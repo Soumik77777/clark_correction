@@ -24,14 +24,14 @@ def fetch_d_from_lbl(filepath):
 
 
 def mk_data_dict(directory):
-    all_files = [file for file in os.listdir(directory)]
+    all_files = [file for file in os.listdir(directory + 'All-files/')]
     if len(all_files) == 0:
         return print("The directory is empty.")
     else:
         cubefiles_dict = {}
         for file in all_files:
-            if file.endswith('.cub') and '_phodata' not in file:
-                base_name = file.replace('.cub', '')
+            if file.endswith('.TAB'):
+                base_name = file.replace('_HK_1.TAB', '')
 
                 # data_file_path = os.path.join(directory, file)
 
@@ -39,11 +39,11 @@ def mk_data_dict(directory):
                 # geo_info_path = os.path.join(directory, geo_info_file)
 
                 denoise_iof_file = f"{base_name}_1_artifact_corrected.npy"
-                denoised_directory = '/Data/sourav/Artifact_correction/Data/artifact-corrected/artifact-corrected-survey-ir-ceres-nasa-pds/'
+                denoised_directory = f"{directory}All-files_artifact_corrected/"
                 denoised_iof_file_path = os.path.join(denoised_directory, denoise_iof_file)
 
                 lbl_file = f"{base_name}_1.LBL"
-                lbl_file_path = os.path.join(directory, lbl_file)
+                lbl_file_path = os.path.join(f"{directory}All-files/", lbl_file)
 
                 cubefiles_dict[base_name] = {
                     # "data": data_file_path,
@@ -68,18 +68,18 @@ def cubefile_to_numpy(imagefile):
 
 source_directory = '/Data/soumik_backup/'
 
-data_directory = source_directory + 'survey_1b/cub_converted/'
-save_directory = source_directory + 'survey_1b/clark_2/'
+save_directory = source_directory + 'all_files_temp/clark_results/'
 
 ss_data = np.loadtxt(source_directory+"ss-ceres-dawn.txt", delimiter='\t', skiprows=1)
 
 wavelengths = ss_data[:, 0]
 solar_flux =  ss_data[:, 1]
 
-vir_corr_factor = np.loadtxt(source_directory+'VIR_correction_factor_IR.txt', delimiter=',', skiprows=1)
+data_directory = '/Data/sourav/Ceres_sourav/Data/IR/ir-nasa-pds/'
 
-survey_dict = mk_data_dict(data_directory)
-keys = [key for key in survey_dict.keys()]
+all_files_dict = mk_data_dict(data_directory)
+keys = [key for key in all_files_dict.keys()]
+
 
 
 def blackbody_rad(wav,T):
@@ -181,7 +181,7 @@ def process_key(key, survey_dict, save_directory):
     np.save(filepath, data_to_save)
     print(f"Saved results for {key} to {filepath}")
 
-tasks = [process_key.remote(key, survey_dict, save_directory) for key in survey_dict.keys()]
+tasks = [process_key.remote(key, all_files_dict, save_directory) for key in all_files_dict.keys()]
 
 ray.get(tasks)
 
